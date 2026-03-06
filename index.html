@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+    
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1b4d3e">
+
+<meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>දේශීය වෛද්‍ය ශබ්දකෝෂය - Ruwan Gamaralalage</title>
+    
+    <script src="data.js" defer></script>
+    
+    <style>
+        :root {
+            --primary-green: #1b4d3e; --accent-green: #2d5a27; --bg-cream: #fdfbf7;
+            --text-dark: #2c3e50; --card-white: #ffffff; --content-font-size: 18px; 
+            --whatsapp-green: #25D366;
+        }
+
+        body.dark-mode { --bg-cream: #121212; --card-white: #1e1e1e; --text-dark: #e0e0e0; --primary-green: #81c784; }
+
+        body {
+            font-family: 'Segoe UI', 'Noto Sans Sinhala', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-cream); margin: 0; padding: 15px; color: var(--text-dark);
+            -webkit-user-select: none; user-select: none; transition: background 0.3s ease;
+        }
+
+        input, textarea { -webkit-user-select: text; user-select: text; }
+
+        .container {
+            max-width: 850px; margin: 10px auto; background: var(--card-white);
+            padding: 30px; border-radius: 20px; box-shadow: 0 10px 40px rgba(27, 77, 62, 0.1); border: 1px solid #e0d7c6;
+        }
+
+        header { text-align: center; margin-bottom: 20px; }
+        header img { max-width: 100%; height: auto; border-radius: 10px; }
+
+        .nav-menu { display: flex; justify-content: space-around; padding: 15px 0; border-top: 1px solid #eee; border-bottom: 1px solid #eee; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+        .nav-item { color: var(--primary-green); font-weight: bold; font-size: 14px; cursor: pointer; transition: 0.3s; }
+        .nav-item:hover { color: #e67e22; }
+
+        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        #wordCountDisplay { color: var(--accent-green); font-weight: bold; font-size: 15px; }
+        
+        .font-controls button { background: var(--primary-green); color: white; border: none; padding: 5px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; margin-left: 5px; }
+
+        /* Search Box with Mic Button */
+        .search-container { position: relative; width: 100%; }
+        .search-box { width: 100%; padding: 18px 50px 18px 18px; border: 2px solid #dcdde1; border-radius: 15px; font-size: 18px; box-sizing: border-box; outline: none; background-color: #f9f9f9; }
+        body.dark-mode .search-box { background-color: #2d2d2d; color: white; border-color: #444; }
+        
+        .mic-btn { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); background: none; border: none; font-size: 24px; cursor: pointer; color: var(--primary-green); }
+        .mic-btn.listening { color: red; animation: pulse 1s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+
+        .category-filter { display: flex; justify: center; gap: 8px; margin-top: 15px; margin-bottom: 10px; flex-wrap: wrap; }
+        .cat-btn { background: var(--card-white); border: 2px solid var(--primary-green); color: var(--primary-green); padding: 6px 12px; border-radius: 20px; cursor: pointer; font-weight: bold; font-size: 13px; }
+        .cat-btn.active { background: var(--primary-green); color: white; }
+
+        .alphabet-index { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; margin-top: 10px; padding: 10px; background: rgba(27, 77, 62, 0.05); border-radius: 12px; }
+        .letter-btn { background: var(--card-white); border: 1px solid #ddd; border-radius: 5px; padding: 5px 8px; font-size: 13px; cursor: pointer; color: var(--primary-green); font-weight: bold; }
+
+        #results { max-width: 850px; margin: 25px auto; }
+        .word-card { background: var(--card-white); padding: 25px; border-radius: 18px; margin-bottom: 20px; border-left: 6px solid var(--primary-green); box-shadow: 0 4px 15px rgba(0,0,0,0.05); position: relative; }
+        .word-title { font-weight: bold; color: var(--primary-green); font-size: 24px; display: block; }
+        .meaning { font-size: var(--content-font-size); line-height: 1.9; color: #34495e; text-align: justify; }
+
+        .bookmark-btn { cursor: pointer; font-size: 24px; color: #ccc; float: right; transition: 0.3s; }
+        .bookmark-btn.active { color: #f1c40f; }
+
+        #loadMoreContainer { text-align: center; margin-bottom: 50px; }
+        .load-more-btn { background: var(--primary-green); color: white; border: none; padding: 12px 30px; border-radius: 30px; cursor: pointer; font-weight: bold; font-size: 15px; display: none; }
+
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); }
+        .modal-content { background-color: var(--bg-cream); margin: 5% auto; padding: 30px; border-radius: 20px; width: 90%; max-width: 800px; max-height: 80vh; overflow-y: auto; position: relative; }
+        .close-btn { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
+
+        .footer { text-align: center; margin-top: 50px; padding-top: 25px; border-top: 1px solid #eee; color: #7f8c8d; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+<div id="splash-screen" style="position:fixed; top:0; left:0; width:100%; height:100%; background:#1b4d3e; z-index:9999; display:flex; flex-direction:column; align-items:center; justify-content:center; color:white;">
+    <h2>දේශීය වෛද්‍ය ශබ්දකෝෂය</h2>
+    <p>Ruwan Gamaralalage Digital Project- CopyRight(c)2026</p>
+    <div class="loader" style="border:4px solid #f3f3f3; border-top:4px solid #fdfbf7; border-radius:50%; width:40px; height:40px; animation:spin 1s linear infinite;"></div>
+</div>
+<style> @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } } </style>
+
+<div class="container">
+    <header><img src="head.jpg" alt="Header"></header>
+    <div class="nav-menu">
+        <span class="nav-item" onclick="showBookmarks()">මගේ ප්‍රියතම</span>
+        <span class="nav-item" onclick="showModal('history')">දේශීය වෙදකමේ ඉතිහාසය</span>
+        <span class="nav-item" onclick="showModal('author')">කර්තෘ සටහන</span>
+        <span class="nav-item" onclick="showModal('compiler')">සම්පාදකගේ සටහන</span>
+    </div>
+
+    <div class="top-bar">
+        <div class="font-controls">
+            <button onclick="changeFontSize(2)">A +</button>
+            <button onclick="changeFontSize(-2)">A -</button>
+            <button onclick="toggleDarkMode()" id="darkBtn">🌙</button>
+        </div>
+        <p id="wordCountDisplay">මුළු වචන සංඛ්‍යාව: <span id="wordCount">0</span></p>
+    </div>
+
+    <div class="search-container">
+        <input type="text" id="searchInput" placeholder="මෙහි සොයන්න..." onkeyup="initSearch()" class="search-box">
+        <button id="voiceBtn" class="mic-btn" onclick="startVoiceSearch()">🎤</button>
+    </div>
+    
+    <div class="category-filter">
+        <button class="cat-btn active" onclick="filterByCategory('all', this)">සියල්ල</button>
+        <button class="cat-btn" onclick="filterByCategory('plant', this)">ඖෂධ පැළෑටි</button>
+        <button class="cat-btn" onclick="filterByCategory('symptom', this)">රෝග ලක්ෂණ</button>
+        <button class="cat-btn" onclick="filterByCategory('treatment', this)">ප්‍රතිකාර ක්‍රම</button>
+    </div>
+    <div class="alphabet-index" id="alphabetIndex"></div>
+</div>
+
+<div id="results"></div>
+
+<div id="loadMoreContainer">
+    <button id="loadMoreBtn" class="load-more-btn" onclick="renderNextChunk()">තවත් පෙන්වන්න...</button>
+</div>
+
+<div id="infoModal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeModal()">&times;</span>
+        <h2 id="modalTitle" style="color: var(--primary-green); border-bottom: 2px solid var(--primary-green); padding-bottom: 10px;"></h2>
+        <div id="modalBody" style="font-size: 17px; text-align: justify; margin-top: 15px; line-height: 1.8;"></div>
+    </div>
+</div>
+
+<div class="footer">
+    <p>Ruwan Gamaralalage Digital Project - CopyRight(c) 2026</p>
+</div>
+
+<script>
+    let currentCategory = 'all';
+    let filteredData = [];
+    let currentIndex = 0;
+    const CHUNK_SIZE = 30; 
+
+    window.addEventListener('load', function() {
+        setTimeout(() => { document.getElementById('splash-screen').style.display = 'none'; }, 2000);
+        if (typeof dictionaryData !== 'undefined') {
+            document.getElementById('wordCount').innerText = dictionaryData.length.toLocaleString('si-LK');
+            createAlphabetIndex();
+        }
+    });
+
+    // Voice Search Logic
+    function startVoiceSearch() {
+        const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        recognition.lang = "si-LK";
+        const btn = document.getElementById('voiceBtn');
+
+        recognition.onstart = () => { btn.classList.add('listening'); };
+        recognition.onend = () => { btn.classList.remove('listening'); };
+        
+        recognition.onresult = (event) => {
+            const transcript = event.results[0][0].transcript;
+            document.getElementById('searchInput').value = transcript;
+            initSearch();
+        };
+        recognition.start();
+    }
+
+    const sinhalaLetters = ["අ", "ආ", "ඇ", "ඈ", "ඉ", "ඊ", "උ", "ඌ", "එ", "ඒ", "ඔ", "ඕ", "ක", "ග", "ච", "ජ", "ට", "ඩ", "ණ", "ත", "ද", "න", "ප", "බ", "ම", "ය", "ර", "ල", "ව", "ස", "හ"];
+    function createAlphabetIndex() {
+        const container = document.getElementById('alphabetIndex');
+        sinhalaLetters.forEach(letter => {
+            let btn = document.createElement('button');
+            btn.className = 'letter-btn'; btn.innerText = letter;
+            btn.onclick = () => { document.getElementById('searchInput').value = letter; initSearch(true); };
+            container.appendChild(btn);
+        });
+    }
+
+    function filterByCategory(cat, btn) {
+        document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active'); currentCategory = cat;
+        initSearch(document.getElementById('searchInput').value.length === 1);
+    }
+
+    let searchTimeout = null;
+    function initSearch(isIndexSearch = false) {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => performSearch(isIndexSearch), 300);
+    }
+
+    function performSearch(isIndexSearch) {
+        let input = document.getElementById('searchInput').value.trim().toLowerCase();
+        let resultDiv = document.getElementById('results');
+        let loadMoreBtn = document.getElementById('loadMoreBtn');
+        if (input.length < 1) { resultDiv.innerHTML = ""; loadMoreBtn.style.display = "none"; return; }
+
+        filteredData = dictionaryData.filter(item => {
+            const categoryMatch = (currentCategory === 'all' || item.category === currentCategory);
+            let wordMatch = isIndexSearch ? item.word.startsWith(input) : (item.word.toLowerCase().includes(input) || (item.singlish && item.singlish.toLowerCase().includes(input)));
+            return categoryMatch && wordMatch;
+        });
+
+        currentIndex = 0; resultDiv.innerHTML = ""; renderNextChunk();
+    }
+
+    function renderNextChunk() {
+        let resultDiv = document.getElementById('results');
+        let loadMoreBtn = document.getElementById('loadMoreBtn');
+        let favorites = JSON.parse(localStorage.getItem('favWords')) || [];
+        const nextBatch = filteredData.slice(currentIndex, currentIndex + CHUNK_SIZE);
+        let html = "";
+        nextBatch.forEach(item => {
+            let isFav = favorites.includes(item.word) ? "active" : "";
+            html += `<div class="word-card"><span class="bookmark-btn ${isFav}" onclick="toggleBookmark('${item.word}')">★</span><span class="word-title">${item.word}</span><div class="meaning">${item.meaning}</div></div>`;
+        });
+        resultDiv.innerHTML += html; currentIndex += CHUNK_SIZE;
+        loadMoreBtn.style.display = (currentIndex < filteredData.length) ? "inline-block" : "none";
+    }
+
+    const infoData = {
+        history: {
+            title: "දේශීය වෙදකමේ ඉතිහාසය",
+            body: `මින් සූ විසි ශතවර්ෂයකින් ඔබ්බෙහි දුර්ලභ ක්‍රියා නිසා රටින් පිටුවහල් කළ විජයාදි දුර්ජන පිරිස මෙහි පැමිණ මෙම දිවයින තමන් සතු කර ගත්තෝ වන්නාහ. මෙහි විසූ ලක්ෂ සංඛ්‍යාත, ලෝකයා මවිත කරවන ශිල්ප වැඩ කළෝ ය. <br><br> වික්‍රමසිංහ සන්ධිය වන තෙක් ලක්දිව බැබළීමෙන් යුක්ත වූ දුර්ලභ රත්නයක් කොට "ලංකා වෛද්‍ය ශිල්පීන් තැබූ දක්ෂයෝ" යැයි ලෝකයා හමුවේ අසත්‍ය වාර්තා වැනි පිහිට වූ නමුත්, විමසුම් සහිතව ඒ රචනය කියවන විට ඒ කාල ලොව දියුණු අන්්‍යයන්ට මනුෂ්‍යයන් නම් "ලක්දිව විසූ පිරිස හෝ මර" යැයි සිතිය හැක. <br><br> ඔවුහු නුවර ගැන වර්ණනයක් ලැබිය හැකි උච්ච ශිඛර මහා මන්දිර සහිත කෙළවර මාලිගා සම්පූර්ණ මහා නගර නිර්මාණය කළෝ ය. අභ්‍යවකාශ ගමන යෝධයන් සේ ශක්තිමත් යාත්‍රා අවසාන කොට ඇති යන්ත්‍ර-සූත්‍ර සෑදූවෝ ය. ඒ අභ්‍යවකාශ යාත්‍රා වලින් ලෝක වාර්තා පිහිටුවූවෝ ය. නාඩි ශාස්ත්‍රය හා රසායනික විද්‍යාව ඇතුළු වෙදකමෙහිත් දක්ෂව විසූහ. යන්ත්‍ර-මන්ත්‍ර සහිත ප්‍රසිද්ධ ශාස්ත්‍රයෙන් මෙන් ම සංගීතයෙන් ද කෙළ පැමිණියෝ ය. නොයෙක් විෂයයන් පිළිබඳ අගනා ග්‍රන්ථ සම්පාදනය කළහ. අසල්වැසි දේශයන් සමග සටන් කොට ඔවුන් තමා ඉදිරියේ දනගැස්සවූහ. <br><br> ලාංකිකයන්ගේ මේ අප්‍රතිහත දියුණුව දඹදිව විසූ දෙවියන්ට පවා කරදර වුණා පමණක් නොව ඔවුන්ගේ රජය ද දියුණූ කළෝය. ලක්දිව ජාතික හා ආගමික ශිෂ්ටාචාරය උඩ ගොඩනැගුණු ශ්‍රී විභූතිය මකා දැමුවේ මින් අවුරුදු දෙදහසකට පෙර අසූර යුගයෙහි මෙහි පැමිණි වජ්‍රවංශික කණ්ඩායම් ප්‍රමුඛ කොට ඇති ඉන්දියානුවෝ ම ය. <br><br> ගත වර්ෂ විසි පහකට පමණ පෙර දේව-යක්ෂ(රාක්ෂ)-නාග යන ගෝත්‍රිකයන් අතර බෙදී ගිය රාජ්‍ය පාලනය පිළිබඳ ඇති වූ අභ්‍යන්තර පක්‍ෂ භේද නමැති අර්බුදයෙන් පෙළී පෙළී ක්‍රමයෙන් පරිහානි පක්ෂයකට ගමන් කරමින් සිටි සමයක මෙහි පැමිණි විජයාදි දුෂ්ට පිරිස මෙම දිවයින තමන් සතු කර ගැනීම වඩා අපහසු කරුණක් නොවිය. විදේශිකයන් යටතට පත්වන රටවල ස්වදේශිකයන් හා ඔවුන්ට අයත් ශිල්පශාස්ත්‍රත් පිරිහීම නොවැළැක්විය හැක්කකි. එකල විජයාදීන් අතින් සිදු වූයේ ද ඒ පාරම්පරික ජාතික විනාශය ම ය. <br><br> රාවණ සමය ලක්දිව දේශීය වෙදකමේ ස්වර්ණමය යුගය ලෙස සැලකිය හැකි ය. ජගත් පූජ්‍ය වෛද්‍ය පරම්පරාවක ආදි කර්තෘවරයකු වූ ද, පුලස්තිපුර අග්‍ර රාජධානිය කොට රාජ්‍යානුශාසනය කළා වූ ද, මහර්ෂි පුලස්තිගේ මුණුබුරු වූ වෛද්‍ය ශිරෝමණි ශ්‍රී ලංකාධිපති රාවණ අධිරාජයා ලොව විසූ ශ්‍රේෂ්ඨ වෛද්‍යවරුන් අතරෙන් ප්‍රමුඛස්ථානයෙහිලා ගැනේ. මේ තුමා ජීවත් වූයේ වික්‍රම සංවත්සරයෙන් 1207 වසකට පෙර යැයි ඇතැම් භාරතීය ඓතිහාසිකයන්ගේ මතය යි. බුද්ධ වර්ෂයෙන් යට 1844 වසකට පෙර යැයි රාජාවලියේ කියා තිබේ. <br><br> මේ කරුණු අනුව බලන කල නිගමනයකට බැස හැක්කේ දඹදිව දස දේශයක් යටත් කළ නිසා ඒ දස දේශ කිරුළ අනුව "දශීස්" යයි විරුද නාමයකින් හැඳින්වෙන මේ තුමා මින් අවුරුදු හාර දහසකට පෙර ජීවත් වූ බව යි. එකල ලක්දිව යන්ත්‍ර-සූත්‍ර අතින් මෙකල යුරෝපය මෙන් ම කර්මාන්ත යුගයක පැවති බව රාමායණ-රාවණ යුද්ධයෙහි දී පාවිච්චි කරන ලද නාගාස්ත්‍ර-අග්නිඅස්ත්‍ර ආදිය ගැන කියැවීමෙන් පමණක් නොව කාර්මික රටකට අයත් රාවණ රජුගේ ඇඳුමෙන් ම ගැනේ. සිය සොහොයුරාටත්, මොහුටත්, අන්්‍යයන් සතු යානා තිබුණු බව ද සඳහන් වේ. <br><br> රාවණ තෙමේ දක්‍ෂ රසායන වෛද්‍යවරයෙකි. ඉගෙනීම ගුරුවරයෙකු ගැන කියා නැත. නමුත් අනුන් අතින් නො මැරෙන වරයක් ලබා ගැනීම සඳහා බ්‍රහ්මයා සතුටු කරවනු වස් ගෝකණ්ණා ග්‍රාමයට වී තපස් රැකි බව කිය වේ. බ්‍රහ්ම තෙමේ ආයුර්වේදයේ ප්‍රවෘත්ති කර්තෘවරයා යි. රාවණ රජු මොහුගෙන් බලාපොරොත්තු වූ වරය ගැන සිතන විට ඔහු බ්‍රහ්මයාගෙන් වෙදකම ඉගෙන ගත්තා පමණක් නොව ක්ෂණික තුවාල වලින් දිවි ගලවා ගත හැකි රහස් ඖෂධ සොයා ගැනීමත් ගෝකණ්ණා ග්‍රාමෙහි දී දැනගෙන තිබෙන බැව් සිතිය හැක. <br><br> රාවණ-රාම යුද්ධයෙහි දී බරපතල තුවාල ලැබූ (මියගිය) අයට පණ දුන් බවක් ද කියවෙන නිසා බ්‍රහ්මයා සතුටු කොට ඉගෙන ගත් ඒ විශේෂ වෙදකමෙන් ද අදහස් පරිදි ප්‍රයෝජන ගත් බැව් සිතීමට ඉඩ තිබේ. එසේම මින් පෙර හෝ පසුව නො පැවති ලෙස යන්ත්‍ර-මන්ත්‍ර ආදී ගුප්ත විද්‍යාත් දියුණුව පැවති බැව් "අහසේ වලාකුළ තුළ සැඟවී සිට පහර දීම" "අදෘශ්‍යමාන ව සිට පහර දීම" ආදී ඒ පිළිබඳ කතා වලින් හැඟේ. <br><br> පාණිනි සංස්කෘත ව්‍යාකරණ ශාස්ත්‍රය හකුළුවා පාණිනි ව්‍යාකරණය කළාක් මෙන් ද, ගෞතම සූත්‍ර න්‍යාය ශාස්ත්‍රය හකුළුවා ගෞතම සූත්‍රය කළාක් මෙන් ද, වරක තෙමේ අග්නිවේශ තන්ත්‍රය හකුළුවා චරක සංහිතාව කළාක් මෙන් ද, රාවණ මනුෂ්‍ය තෙමේ සකල ආයුර්වේද ග්‍රන්ථ සාරය උපුරා මේ අර්කප්‍රකාශය කළේ ය. <br><br> නොයෙක් රෝගාබාධ සඳහා නියමිත අර්ක වර්ග ඇතුළත් ශතක දසයකින් හෙවත් ශ්ලෝක දහසකින් පරිමිත මේ ග්‍රන්ථය ප්‍රකාශ කර තිබෙන්නේ සිය අග මෙහෙසිය වූ මන්දෝදරී සමග සංවාද මුඛයෙනි. යන්ත්‍රානුසාරයෙන් වාෂ්ප කර ඖෂධ සාරය පෙරා ගන්නා (අර්ක) ක්‍රමය මේ ග්‍රන්ථයෙහි සඳහන්ව තිබෙන නිසා මෙයින් හැඟේනේ එකල යන්ත්‍ර-සූත්‍ර පමණක් නොව වෙදකම ද මෙකල අපර දිග ක්‍රමයෙහි එන ලෙස පැවති බව යි. <br><br> උත්තර-දක්ෂිණ භාරතීය (ආයුර්වේද-සිද්ධ) වෙදකම ද මේ පමණ හෝ මීටත් වඩා පැරණි බැව් නොයෙක් සාධක අනුව සිතිය හැක. පසු කලක දී මේ දෙ වෙදකම ලාංකික වෙදකම හා හුවමාරු කර ගෙන තිබෙන බැව් දෙ රටෙහි ම තිබෙන පොත් පත් සසඳා බැලීමෙන් පෙනේ. පෙර දිග ධර්ම දූතයන්ගේ, දේශ සංචාරකයන්ගේ හා වෙළඳුන්ගේ මාර්ගයෙන් අරාබිය පාරේ අපර දිගට ගියේ ද මේ වෙදකම ම යි.`
+        },
+        author: {
+            title: "කර්තෘ සටහන",
+            body: "පණ්ඩිත කිරිඇල්ලේ ඥානවිමල හිමියන් (1908-1990) යනු හෙළ වෙදකම, ඉතිහාසය සහ ශාස්ත්‍රීය පර්යේෂණ වෙනුවෙන් දිවි හිමියෙන් කැපවුණු මහා යතිවරයෙකි. මෙම ශබ්දකෝෂය මගින් උන්වහන්සේ උත්සාහ කළේ විවිධ ප්‍රාදේශීය ව්‍යවහාරයන්හි විසිරී ඇති ඖෂධ නාමයන් සහ ඒවායේ ගුණාංග එකම විද්‍යාත්මක පදනමකට ගොනු කිරීමටයි."
+        },
+        compiler: {
+            title: "සම්පාදකගේ සටහන",
+            body: "අතීතයේ සිට හෙළ වෙද පරපුර දිවි දෙවැනි කොට රැකගෙන ආ ඖෂධීය රහස් සහ හෙළ වෙදකමේ අසිරිය නූතන තාක්ෂණය සමඟ මුසු කර, මතු පරපුර වෙනුවෙන් සුරක්ෂිත කිරීම මෙම ඩිජිටල් ව්‍යාපෘතියේ ප්‍රධාන අරමුණයි. <br><br> <b>- රුවන් ගමරාලලාගේ</b>"
+        }
+    };
+
+    function showModal(key) { document.getElementById('modalTitle').innerText = infoData[key].title; document.getElementById('modalBody').innerHTML = infoData[key].body; document.getElementById('infoModal').style.display = "block"; }
+    function closeModal() { document.getElementById('infoModal').style.display = "none"; }
+    function toggleDarkMode() { document.body.classList.toggle('dark-mode'); }
+    function changeFontSize(delta) { const root = document.querySelector(':root'); const cur = parseFloat(getComputedStyle(root).getPropertyValue('--content-font-size')); root.style.setProperty('--content-font-size', (cur + delta) + 'px'); }
+    function toggleBookmark(word) {
+        let favs = JSON.parse(localStorage.getItem('favWords')) || [];
+        favs.includes(word) ? favs.splice(favs.indexOf(word), 1) : favs.push(word);
+        localStorage.setItem('favWords', JSON.stringify(favs));
+        const stars = document.querySelectorAll('.bookmark-btn');
+        stars.forEach(s => { if(s.parentElement.querySelector('.word-title').innerText === word) s.classList.toggle('active'); });
+    }
+    function showBookmarks() {
+        let favs = JSON.parse(localStorage.getItem('favWords')) || [];
+        let body = document.getElementById('modalBody');
+        document.getElementById('modalTitle').innerText = "මගේ ප්‍රියතම වචන";
+        if (favs.length === 0) body.innerHTML = "<p style='text-align:center;'>තවමත් එක් කර නැත.</p>";
+        else {
+            let html = "";
+            favs.forEach(w => { html += `<div style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #ddd;"><span><b>${w}</b></span><button onclick="toggleBookmark('${w}'); showBookmarks();" style="background:red; color:white; border:none; border-radius:5px; padding:5px;">ඉවත් කරන්න</button></div>`; });
+            body.innerHTML = html;
+        }
+        document.getElementById('infoModal').style.display = "block";
+    }
+</script>
+</body>
+</html>
